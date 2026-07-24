@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>coShin</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <button id="settings-btn" class="settings-btn" type="button" aria-label="Settings">⚙</button>
+
+  <main id="app">
+    <!-- Welcome screen -->
+    <section id="view-welcome" class="view view-welcome" data-view="welcome">
+      <div class="welcome-content">
+        <h1 class="app-title">coShin</h1>
+        <p class="app-description">
+          A full-screen colour flasher. Press start and watch the screen cycle
+          through your chosen colours on a timer — tweak the colours and the
+          interval any time from settings.
+        </p>
+        <button id="start-btn" class="start-btn" type="button">START</button>
+      </div>
+    </section>
+
+    <!-- Main colour-cycling screen -->
+    <section id="view-main" class="view view-main" data-view="main" hidden>
+      <ul id="colour-history" class="colour-history" aria-label="Recent colours"></ul>
+      <div class="timer" id="timer" aria-live="off">3.0</div>
+      <button id="stop-btn" class="stop-btn" type="button">STOP</button>
+    </section>
+
+    <!-- Settings screen -->
+    <section id="view-settings" class="view view-settings" data-view="settings" hidden>
+      <div class="settings-panel">
+        <h2>Settings</h2>
+
+        <label class="field">
+          <span>Interval between colours (seconds)</span>
+          <input id="interval-input" type="number" min="0.5" max="60" step="0.5" />
+        </label>
+
+        <fieldset class="field order-field">
+          <span>Colour order</span>
+          <label class="radio-option">
+            <input type="radio" name="order-mode" value="random" id="order-random" />
+            Random
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="order-mode" value="circle" id="order-circle" />
+            Circle (in order)
+          </label>
+        </fieldset>
+
+        <div class="field">
+          <span>Colours</span>
+          <ul id="colour-list" class="colour-list"></ul>
+          <div class="add-colour">
+            <input id="new-colour-input" type="color" value="#3949ab" />
+            <button id="add-colour-btn" type="button">Add colour</button>
+          </div>
+        </div>
+
+        <div class="settings-actions">
+          <button id="reset-btn" type="button" class="reset-btn">Reset to defaults</button>
+          <button id="close-settings-btn" type="button" class="close-btn">Done</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

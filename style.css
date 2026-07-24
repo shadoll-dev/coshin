@@ -1,0 +1,346 @@
+:root {
+  --bg: #111318;
+  --panel: #1c1f26;
+  --text: #f5f6f8;
+  --muted: #a7adba;
+  --accent: #3949ab;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+#app {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.view {
+  width: 100%;
+  height: 100%;
+}
+
+.view[hidden] {
+  display: none !important;
+}
+
+/* Welcome screen */
+.view-welcome {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.welcome-content {
+  max-width: 32rem;
+  text-align: center;
+}
+
+.app-title {
+  font-size: 3.5rem;
+  margin: 0 0 0.75rem;
+  letter-spacing: -0.02em;
+}
+
+.app-description {
+  color: var(--muted);
+  font-size: 1.1rem;
+  line-height: 1.5;
+  margin: 0 0 2.5rem;
+}
+
+.start-btn {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 1.25rem 3.5rem;
+  border: none;
+  border-radius: 1rem;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.start-btn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+}
+
+.start-btn:active {
+  transform: translateY(0);
+}
+
+/* Settings button (global, top-right) */
+.settings-btn {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1000;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font-size: 1.4rem;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.settings-btn:hover {
+  background: rgba(0, 0, 0, 0.65);
+  transform: rotate(20deg);
+}
+
+/* Main colour-cycling screen */
+.view-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--flash-colour, #e53935);
+  transition: background-color 0.25s ease;
+}
+
+.colour-history {
+  position: absolute;
+  top: 1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0.5rem 0.9rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 2rem;
+}
+
+.colour-history li {
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  flex: none;
+}
+
+.colour-history li:last-child {
+  width: 1.4rem;
+  height: 1.4rem;
+  border-color: rgba(255, 255, 255, 0.9);
+}
+
+.timer {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: clamp(4rem, 20vw, 12rem);
+  font-weight: 800;
+  color: rgba(0, 0, 0, 0.35);
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+  pointer-events: none;
+}
+
+.stop-btn {
+  position: absolute;
+  bottom: 3rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 1rem 3rem;
+  border: none;
+  border-radius: 1rem;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.stop-btn:hover {
+  background: rgba(0, 0, 0, 0.75);
+}
+
+/* Settings screen */
+.view-settings {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow-y: auto;
+  padding: 5rem 1.5rem 2rem;
+}
+
+.settings-panel {
+  width: 100%;
+  max-width: 28rem;
+  background: var(--panel);
+  border-radius: 1rem;
+  padding: 2rem;
+}
+
+.settings-panel h2 {
+  margin-top: 0;
+}
+
+.field {
+  display: block;
+  margin-bottom: 1.5rem;
+}
+
+.field > span {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.field input[type="number"] {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid #333846;
+  background: #12141a;
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.order-field {
+  border: none;
+  padding: 0;
+  margin: 0 0 1.5rem;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.radio-option input {
+  cursor: pointer;
+}
+
+.colour-list {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.colour-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #12141a;
+  border: 1px solid #333846;
+  border-radius: 2rem;
+  padding: 0.35rem 0.5rem 0.35rem 0.35rem;
+}
+
+.colour-swatch {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  flex: none;
+}
+
+.colour-chip button {
+  border: none;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0;
+}
+
+.colour-chip button:hover {
+  color: #fff;
+}
+
+.add-colour {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.add-colour input[type="color"] {
+  width: 2.5rem;
+  height: 2.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.add-colour button,
+.settings-actions button {
+  padding: 0.6rem 1.1rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.add-colour button {
+  background: #2a2f3a;
+  color: var(--text);
+}
+
+.add-colour button:hover {
+  background: #333846;
+}
+
+.settings-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2rem;
+}
+
+.reset-btn {
+  background: transparent;
+  color: var(--muted);
+}
+
+.reset-btn:hover {
+  color: #fff;
+}
+
+.close-btn {
+  background: var(--accent);
+  color: #fff;
+}
+
+.close-btn:hover {
+  filter: brightness(1.1);
+}
