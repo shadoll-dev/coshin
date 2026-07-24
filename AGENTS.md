@@ -32,6 +32,10 @@ python3 -m http.server 8973
 
 Then open `http://localhost:8973`.
 
+## Deployment
+
+`.github/workflows/pages.yml` deploys `main` to GitHub Pages on every push, serving at the custom domain in `CNAME` (`coshin.shadoll.com`). The workflow copies an explicit file list (`index.html style.css script.js CNAME`) into a `dist/` folder before publishing — if you add new site assets, add them to that `cp` list too or they won't ship.
+
 ## Verification
 
 No automated tests. Manually verify in a browser:
