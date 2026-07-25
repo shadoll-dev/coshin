@@ -1,6 +1,11 @@
 (() => {
   "use strict";
 
+  // Shown in the footer as a lightweight "did this actually reload" version indicator. No git repo
+  // backs this project, so there's no commit hash to pull from — this just mirrors the cache-busting
+  // ?v= number already hand-bumped on index.html's script.js link; keep both in sync.
+  const ASSET_VERSION = "1";
+
   const STORAGE_KEY = "coshin-settings";
   const DEFAULT_SETTINGS = {
     interval: 3,
@@ -27,6 +32,8 @@
   const addColourBtn = document.getElementById("add-colour-btn");
   const timerEl = document.getElementById("timer");
   const historyEl = document.getElementById("colour-history");
+  const footerEl = document.getElementById("site-footer");
+  const footerVersionEl = document.getElementById("footer-version");
   const mainView = views.main;
   const HISTORY_LIMIT = 10;
 
@@ -65,6 +72,7 @@
     for (const [key, el] of Object.entries(views)) {
       el.hidden = key !== name;
     }
+    footerEl.hidden = name === "main";
   }
 
   function goToWelcome() {
@@ -208,5 +216,36 @@
     renderSettingsForm();
   });
 
+  function registerServiceWorker() {
+    if (!("serviceWorker" in navigator)) return;
+
+    // Local dev must always reflect whatever's currently on disk. sw.js's CACHE_NAME only changes
+    // on a real deploy (the __CACHE_VERSION__ placeholder is substituted by CI, never locally), so
+    // a service worker registered here would serve one fixed snapshot forever, silently ignoring
+    // every subsequent edit and every ?v=N cache-bust. Actively unregister here too (not just skip
+    // future registration) so a *previously* registered local SW self-heals on the next load instead
+    // of requiring a manual DevTools "Unregister".
+    if (["localhost", "127.0.0.1"].includes(location.hostname)) {
+      navigator.serviceWorker.getRegistrations().then((regs) => regs.forEach((r) => r.unregister()));
+      if (window.caches) caches.keys().then((keys) => keys.forEach((k) => caches.delete(k)));
+      return;
+    }
+
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("sw.js").catch(() => {});
+    });
+
+    // A new SW takes control after skipWaiting()/clients.claim() once the previous
+    // page's assets are all replaced — reload once so the page picks up the update.
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (refreshing) return;
+      refreshing = true;
+      window.location.reload();
+    });
+  }
+
+  footerVersionEl.textContent = `v${ASSET_VERSION}`;
   showView("welcome");
+  registerServiceWorker();
 })();
