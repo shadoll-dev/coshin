@@ -20,6 +20,7 @@ coShin is a full-screen colour-flasher SPA. Three views, toggled by showing/hidi
   - Colour cycling uses a 100ms `setInterval` tick that decrements a `remaining` counter and updates the timer text; when it hits ~0 it calls `advanceColour()`, which picks the next colour either sequentially (`"circle"`, wrapping) or by true uniform random pick across the whole list (`"random"`, the default — repeats are possible and expected, since forcibly excluding the current colour would just force strict alternation with only two colours).
   - Opening settings stops the cycling timer; closing settings resumes on the view you came from (`previousView` tracks whether settings was opened from welcome or main). This avoids background timers running behind the settings screen.
   - Settings edits (interval change, add/remove colour, reset) save to `localStorage` immediately.
+  - The Screen Wake Lock API keeps the display from sleeping while cycling: `requestWakeLock()` is called from `startCycling()`, and `stopCycling()` releases it. Browsers auto-release the lock whenever the tab is backgrounded, so a `visibilitychange` listener re-requests it on return to foreground if cycling is still active. Silently no-ops where `navigator.wakeLock` isn't supported (e.g. some browsers/`file://`) — there's no fallback, since the only alternative (a hidden looping video trick) isn't worth the added complexity for a nice-to-have.
 
 ## Icons, manifest & offline support
 

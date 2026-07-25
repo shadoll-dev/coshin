@@ -4,7 +4,7 @@
   // Shown in the footer as a lightweight "did this actually reload" version indicator. No git repo
   // backs this project, so there's no commit hash to pull from — this just mirrors the cache-busting
   // ?v= number already hand-bumped on index.html's script.js link; keep both in sync.
-  const ASSET_VERSION = "1";
+  const ASSET_VERSION = "2";
 
   const STORAGE_KEY = "coshin-settings";
   const DEFAULT_SETTINGS = {
@@ -43,6 +43,7 @@
   let remaining = settings.interval;
   let tickHandle = null;
   let colourHistory = [];
+  let wakeLock = null;
 
   function loadSettings() {
     try {
@@ -135,6 +136,7 @@
 
   function startCycling() {
     stopCycling();
+    requestWakeLock();
     tickHandle = setInterval(() => {
       remaining -= 0.1;
       if (remaining <= 0.05) {
@@ -151,7 +153,33 @@
       clearInterval(tickHandle);
       tickHandle = null;
     }
+    releaseWakeLock();
   }
+
+  // Keeps the screen from sleeping mid-cycle — otherwise the display can turn off while
+  // this is meant to be flashing unattended. The lock is auto-released by the browser
+  // whenever the tab is backgrounded, so it's re-requested on visibilitychange too.
+  async function requestWakeLock() {
+    if (!("wakeLock" in navigator)) return;
+    try {
+      wakeLock = await navigator.wakeLock.request("screen");
+    } catch {
+      wakeLock = null;
+    }
+  }
+
+  function releaseWakeLock() {
+    if (wakeLock) {
+      wakeLock.release().catch(() => {});
+      wakeLock = null;
+    }
+  }
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && tickHandle !== null && !wakeLock) {
+      requestWakeLock();
+    }
+  });
 
   function renderSettingsForm() {
     intervalInput.value = settings.interval;
