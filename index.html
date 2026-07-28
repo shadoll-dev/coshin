@@ -13,7 +13,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="coShin" />
-  <link rel="stylesheet" href="style.css?v=4" />
+  <link rel="stylesheet" href="style.css?v=11" />
 </head>
 <body>
   <div class="header-actions">
@@ -50,7 +50,7 @@
         <button class="modal-close-btn" aria-label="Close" title="Close">✕</button>
         <h2>How to Use coShin</h2>
       </div>
-      <p>coShin is a full-screen colour flasher designed for ambient lighting, mood setting, photography background effects, focus timing, or visual flashing sequences.</p>
+      <p>coShin is a full-screen colour flasher.</p>
 
       <h3>Features & Options</h3>
       <ul>
@@ -74,28 +74,31 @@
         <h2>Settings</h2>
       </div>
 
-      <label class="field">
+      <div class="field">
         <span>Interval between colours (seconds)</span>
         <input id="interval-input" type="number" min="0.5" max="60" step="0.5" />
-      </label>
+        <div id="interval-presets" class="preset-pills" role="radiogroup" aria-label="Timing presets">
+          <button type="button" class="preset-btn" data-preset="3">3s</button>
+          <button type="button" class="preset-btn" data-preset="5">5s</button>
+          <button type="button" class="preset-btn" data-preset="10">10s</button>
+          <button type="button" class="preset-btn" data-preset="30">30s</button>
+          <button type="button" class="preset-btn" data-preset="60">60s</button>
+        </div>
+      </div>
 
-      <fieldset class="field order-field">
+      <div class="field order-field">
         <span>Colour order</span>
-        <label class="radio-option">
-          <input type="radio" name="order-mode" value="random" id="order-random" />
-          Random
-        </label>
-        <label class="radio-option">
-          <input type="radio" name="order-mode" value="circle" id="order-circle" />
-          Circle (in order)
-        </label>
-      </fieldset>
+        <div class="segmented-control" role="radiogroup" aria-label="Colour order">
+          <button id="order-random" type="button" class="segmented-btn" data-order="random">Random</button>
+          <button id="order-circle" type="button" class="segmented-btn" data-order="circle">Circle (in order)</button>
+        </div>
+      </div>
 
       <div class="field">
         <span>Colours</span>
         <ul id="colour-list" class="colour-list"></ul>
         <div class="add-colour">
-          <input id="new-colour-input" type="color" value="#3949ab" />
+          <input id="new-colour-input" type="color" value="#3949ab" aria-label="Pick color" />
           <button id="add-colour-btn" type="button">Add colour</button>
         </div>
       </div>
@@ -112,6 +115,6 @@
     <span id="footer-version" class="footer-version"></span>
   </footer>
 
-  <script src="script.js?v=4"></script>
+  <script src="script.js?v=11"></script>
 </body>
 </html>

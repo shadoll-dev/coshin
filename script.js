@@ -4,7 +4,7 @@
   // Shown in the footer as a lightweight "did this actually reload" version indicator. No git repo
   // backs this project, so there's no commit hash to pull from — this just mirrors the cache-busting
   // ?v= number already hand-bumped on index.html's script.js link; keep both in sync.
-  const ASSET_VERSION = "4";
+  const ASSET_VERSION = "11";
 
   const STORAGE_KEY = "coshin-settings";
   const DEFAULT_SETTINGS = {
@@ -195,8 +195,13 @@
 
   function renderSettingsForm() {
     intervalInput.value = settings.interval;
-    orderRandomInput.checked = settings.order === "random";
-    orderCircleInput.checked = settings.order === "circle";
+    document.querySelectorAll(".preset-btn").forEach((btn) => {
+      const val = Number(btn.dataset.preset);
+      btn.classList.toggle("selected", val === settings.interval);
+    });
+    orderRandomInput.classList.toggle("selected", settings.order === "random");
+    orderCircleInput.classList.toggle("selected", settings.order === "circle");
+
     colourList.innerHTML = "";
     settings.colours.forEach((colour, i) => {
       const li = document.createElement("li");
@@ -243,30 +248,59 @@
     });
   });
 
-  intervalInput.addEventListener("change", () => {
-    const value = Number(intervalInput.value);
-    settings.interval = Number.isFinite(value) && value > 0 ? value : DEFAULT_SETTINGS.interval;
-    intervalInput.value = settings.interval;
-    saveSettings();
+  document.querySelectorAll(".preset-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const val = Number(btn.dataset.preset);
+      if (Number.isFinite(val) && val > 0) {
+        settings.interval = val;
+        intervalInput.value = val;
+        saveSettings();
+        renderSettingsForm();
+      }
+    });
   });
 
-  for (const input of [orderRandomInput, orderCircleInput]) {
-    input.addEventListener("change", () => {
-      settings.order = orderCircleInput.checked ? "circle" : "random";
+  intervalInput.addEventListener("input", () => {
+    const value = Number(intervalInput.value);
+    if (Number.isFinite(value) && value > 0) {
+      settings.interval = value;
       saveSettings();
+      document.querySelectorAll(".preset-btn").forEach((btn) => {
+        btn.classList.toggle("selected", Number(btn.dataset.preset) === value);
+      });
+    }
+  });
+
+  for (const btn of [orderRandomInput, orderCircleInput]) {
+    btn.addEventListener("click", () => {
+      settings.order = btn.dataset.order;
+      saveSettings();
+      renderSettingsForm();
     });
+  }
+
+  function getRandomHexColour() {
+    const letters = "0123456789abcdef";
+    let color = "#";
+    for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
   }
 
   addColourBtn.addEventListener("click", () => {
     const value = newColourInput.value;
-    if (settings.colours.includes(value)) return;
-    settings.colours.push(value);
-    saveSettings();
+    if (!settings.colours.includes(value)) {
+      settings.colours.push(value);
+      saveSettings();
+    }
+    newColourInput.value = getRandomHexColour();
     renderSettingsForm();
   });
 
   resetBtn.addEventListener("click", () => {
     settings = structuredClone(DEFAULT_SETTINGS);
+    newColourInput.value = getRandomHexColour();
     saveSettings();
     renderSettingsForm();
   });

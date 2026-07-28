@@ -8,6 +8,7 @@
   --surface-border: rgba(255, 255, 255, 0.12);
   --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.5);
   --border: #333846;
+  --border-strong: #565758;
 }
 
 * {
@@ -102,24 +103,102 @@ html, body {
 .icon-btn {
   width: 36px;
   height: 36px;
-  border-radius: 50%;
-  border: 1px solid var(--surface-border);
+  padding: 0;
+  border-radius: 6px;
+  border: 1px solid var(--border-strong);
   background: rgba(0, 0, 0, 0.45);
   color: var(--text);
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: bold;
+  line-height: 1;
   cursor: pointer;
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s ease, transform 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .icon-btn:hover {
-  background: rgba(0, 0, 0, 0.7);
-  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Main colour-cycling screen */
+.view-main {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--flash-colour, #e53935);
+  transition: background-color 0.25s ease;
+}
+
+.colour-history {
+  position: absolute;
+  top: calc(1.25rem + env(safe-area-inset-top, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0.5rem 0.9rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 2rem;
+  z-index: 10;
+}
+
+.colour-history li {
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  flex: none;
+}
+
+.colour-history li:last-child {
+  width: 1.4rem;
+  height: 1.4rem;
+  border-color: rgba(255, 255, 255, 0.9);
+}
+
+.timer {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: clamp(4rem, 20vw, 12rem);
+  font-weight: 800;
+  color: rgba(0, 0, 0, 0.35);
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.stop-btn {
+  position: absolute;
+  bottom: 3rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 1rem 3rem;
+  border: none;
+  border-radius: 1rem;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  z-index: 10;
+}
+
+.stop-btn:hover {
+  background: rgba(0, 0, 0, 0.75);
 }
 
 /* Modal windows */
@@ -180,7 +259,7 @@ html, body {
 
 .modal-close-btn {
   position: absolute;
-  top: 1.2rem;
+  top: 1.5rem;
   right: 0;
   width: 28px;
   height: 28px;
@@ -188,9 +267,9 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid var(--surface-border);
-  border-radius: 50%;
+  background: none;
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
   color: var(--text);
   cursor: pointer;
   font-size: 0.9rem;
@@ -266,38 +345,118 @@ html, body {
 
 .field > span {
   display: block;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.6rem;
   color: var(--muted);
   font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .field input[type="number"] {
   width: 100%;
-  padding: 0.6rem 0.75rem;
+  min-height: 44px;
+  padding: 0.65rem 0.85rem;
   border-radius: 0.5rem;
   border: 1px solid #333846;
   background: #12141a;
   color: var(--text);
-  font-size: 1rem;
+  font-size: 1.05rem;
+  font-weight: 600;
 }
 
+.field input[type="number"]:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(57, 73, 171, 0.3);
+}
+
+/* Preset timing pills */
+.preset-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.preset-btn {
+  flex: 1;
+  min-width: 48px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: #12141a;
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+
+.preset-btn:hover {
+  background: #1c212c;
+  border-color: var(--muted);
+}
+
+.preset-btn:active {
+  transform: scale(0.97);
+}
+
+.preset-btn.selected {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(57, 73, 171, 0.4);
+}
+
+/* Segmented control for colour order */
 .order-field {
   border: none;
   padding: 0;
   margin: 0 0 1.5rem;
 }
 
-.radio-option {
+.segmented-control {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.4rem;
-  cursor: pointer;
-  font-size: 0.95rem;
+  gap: 6px;
+  background: #12141a;
+  padding: 4px;
+  border-radius: 0.6rem;
+  border: 1px solid var(--border);
 }
 
-.radio-option input {
+.segmented-btn {
+  flex: 1;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 0.45rem;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 600;
   cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.segmented-btn:hover {
+  color: var(--text);
+}
+
+.segmented-btn:active {
+  transform: scale(0.98);
+}
+
+.segmented-btn.selected {
+  background: var(--accent);
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .colour-list {
@@ -312,33 +471,47 @@ html, body {
 .colour-chip {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.5rem;
+  min-height: 44px;
   background: #12141a;
   border: 1px solid #333846;
   border-radius: 2rem;
-  padding: 0.35rem 0.5rem 0.35rem 0.35rem;
+  padding: 0.35rem 0.6rem 0.35rem 0.45rem;
 }
 
 .colour-swatch {
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 1.6rem;
+  height: 1.6rem;
   border-radius: 50%;
   border: 1px solid rgba(255, 255, 255, 0.2);
   flex: none;
 }
 
 .colour-chip button {
+  width: 32px;
+  height: 32px;
   border: none;
   background: none;
   color: var(--muted);
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 1.1rem;
   line-height: 1;
   padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
-.colour-chip button:hover {
+.colour-chip button:hover:not(:disabled) {
   color: #fff;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.colour-chip button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
 }
 
 .add-colour {
@@ -348,43 +521,59 @@ html, body {
 }
 
 .add-colour input[type="color"] {
-  width: 2.5rem;
-  height: 2.5rem;
-  border: none;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border);
   border-radius: 0.5rem;
-  padding: 0;
-  background: none;
+  padding: 2px;
+  background: #12141a;
   cursor: pointer;
-}
-
-.add-colour button,
-.settings-actions button {
-  padding: 0.6rem 1.1rem;
-  border-radius: 0.5rem;
-  border: none;
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 600;
 }
 
 .add-colour button {
+  min-height: 44px;
+  padding: 0.65rem 1.2rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
   background: #2a2f3a;
   color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
 }
 
 .add-colour button:hover {
   background: #333846;
+  border-color: var(--muted);
+}
+
+.add-colour button:active {
+  transform: scale(0.98);
 }
 
 .settings-actions {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   margin-top: 2rem;
+  gap: 1rem;
+}
+
+.settings-actions button {
+  min-height: 44px;
+  padding: 0.65rem 1.2rem;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
 }
 
 .reset-btn {
   background: transparent;
+  border: none;
   color: var(--muted);
+  cursor: pointer;
+  transition: color 0.15s ease;
 }
 
 .reset-btn:hover {
