@@ -7,11 +7,11 @@ A full-screen colour-flasher — single-page, no build step, no dependencies.
 ## Features
 
 - Welcome screen with a **START** button; settings (⚙) reachable from every screen
-- Full-screen colour background that cycles on a timer (default 3s, configurable) with a countdown shown on screen
+- Dual Modes: **Timer** (automatic countdown colour cycling) or **Stopwatch** (count-up with manual lap logging)
+- Stopwatch controls with **LAP** split recording, **RESUME**, **RESTART**, and **END** actions
 - Colour order is **random** by default, or **circle** (sequential) — switchable in settings
-- History strip showing the last 10 colours shown, as small circles at the top of the screen
-- Add/remove colours (colour picker), reset to defaults — all persisted in `localStorage`
-- **STOP** button returns to the welcome screen
+- Custom palette management (add/remove hex colours via colour picker)
+- Full settings persistence across reloads via `localStorage`
 
 ## Running locally
 

@@ -7,20 +7,18 @@ Agent-facing instructions for the `coshin/` game. See the [root AGENTS.md](../AG
 coShin is a full-screen colour-flasher SPA. Three views, toggled by showing/hiding `<section>` elements (no router, no framework):
 
 - **Welcome** (`#view-welcome`) — app name, description, big **START** button.
-- **Main** (`#view-main`) — full-screen colour background that cycles through `settings.colours` every `settings.interval` seconds, with a countdown timer overlay, a history strip of the last 10 colours shown as small circles (top of screen, newest on the right and slightly larger), and a **STOP** button (returns to welcome).
-- **Settings** (`#view-settings`) — edit the interval and the colour list; opened via the gear button fixed at top-right, which is visible on all three views.
+- **Main** (`#view-main`) — full-screen colour background that cycles through colours every `interval` seconds in Timer mode, or counts up elapsed time with lap recording in Stopwatch mode. Controls include **LAP**, **STOP**, **RESUME**, **RESTART**, and **END**.
+- **Settings** (`#view-settings`) — edit mode (Timer vs Stopwatch), timing presets (3s, 5s, 10s, 30s, 60s), colour order (Random vs Circle), and custom hex palette; opened via the gear button fixed at top-right.
 
 ## Architecture
 
 - Plain HTML/CSS/JS, no build step, no dependencies — matches the rest of the monorepo (see root `AGENTS.md`).
-- `index.html` — markup for all three views plus the persistent settings button.
+- `index.html` — markup for all views plus persistent settings button.
 - `style.css` — all styling. The current flash colour is applied via the CSS custom property `--flash-colour` set inline on `#view-main`.
 - `script.js` — all app logic:
-  - `settings = { interval, colours, order }`, persisted to `localStorage` under key `coshin-settings`. `order` is `"random"` (default) or `"circle"`.
-  - Colour cycling uses a 100ms `setInterval` tick that decrements a `remaining` counter and updates the timer text; when it hits ~0 it calls `advanceColour()`, which picks the next colour either sequentially (`"circle"`, wrapping) or by true uniform random pick across the whole list (`"random"`, the default — repeats are possible and expected, since forcibly excluding the current colour would just force strict alternation with only two colours).
-  - Opening settings stops the cycling timer; closing settings resumes on the view you came from (`previousView` tracks whether settings was opened from welcome or main). This avoids background timers running behind the settings screen.
-  - Settings edits (interval change, add/remove colour, reset) save to `localStorage` immediately.
-  - The Screen Wake Lock API keeps the display from sleeping while cycling: `requestWakeLock()` is called from `startCycling()`, and `stopCycling()` releases it. Browsers auto-release the lock whenever the tab is backgrounded, so a `visibilitychange` listener re-requests it on return to foreground if cycling is still active. Silently no-ops where `navigator.wakeLock` isn't supported (e.g. some browsers/`file://`) — there's no fallback, since the only alternative (a hidden looping video trick) isn't worth the added complexity for a nice-to-have.
+  - Mode, interval, colours, and order are stored in top-level state variables and persisted to `localStorage` under keys `coshin-mode`, `coshin-interval`, `coshin-colours`, and `coshin-order` (with legacy fallback to `coshin-settings`).
+  - Colour cycling uses a 100ms `setInterval` tick that decrements a `remaining` counter (Timer mode) or increments `stopwatchElapsed` (Stopwatch mode).
+  - In Stopwatch mode, tapping **LAP** (or anywhere on screen / Spacebar) records a split entry and immediately advances to the next colour in sequential order. Tapping **STOP** pauses the session and presents **RESUME**, **RESTART**, and **END** action buttons.
 
 ## Icons, manifest & offline support
 

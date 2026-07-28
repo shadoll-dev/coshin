@@ -4,4 +4,4 @@ See [AGENTS.md](./AGENTS.md) — it contains the full guidance for AI coding age
 
 ## Quick description
 
-coShin is a full-screen colour-flasher SPA: press start and the screen cycles through a configurable list of colours (red/yellow by default) on a timer (default 3s), with a countdown shown on screen. The next colour is picked randomly by default, or sequentially ("circle") if chosen in settings. Colours, interval, and order are all editable from settings (gear icon, top-right, visible on every screen) and persisted in `localStorage`. Plain HTML/CSS/JS, no framework or build step.
+coShin is a full-screen colour-flasher & stopwatch SPA: press start to cycle through custom colours on a timer or log laps in stopwatch mode. Features customizable timing presets (3s, 5s, 10s, 30s, 60s), colour order (random vs circle), custom hex palette editing, and full settings persistence across reloads via `localStorage`. Plain HTML/CSS/JS, no framework or build step.
