@@ -4,7 +4,7 @@
   // Shown in the footer as a lightweight "did this actually reload" version indicator. No git repo
   // backs this project, so there's no commit hash to pull from — this just mirrors the cache-busting
   // ?v= number already hand-bumped on index.html's script.js link; keep both in sync.
-  const ASSET_VERSION = "3";
+  const ASSET_VERSION = "4";
 
   const STORAGE_KEY = "coshin-settings";
   const DEFAULT_SETTINGS = {
