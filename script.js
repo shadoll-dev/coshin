@@ -4,14 +4,106 @@
   // Shown in the footer as a lightweight "did this actually reload" version indicator. No git repo
   // backs this project, so there's no commit hash to pull from — this just mirrors the cache-busting
   // ?v= number already hand-bumped on index.html's script.js link; keep both in sync.
-  const ASSET_VERSION = "11";
+  const ASSET_VERSION = "27";
 
-  const STORAGE_KEY = "coshin-settings";
-  const DEFAULT_SETTINGS = {
-    interval: 3,
-    colours: ["#e53935", "#fdd835"],
-    order: "random",
-  };
+  // Individual namespaced localStorage keys — matching worder/wordweave architecture
+  const MODE_KEY = "coshin-mode";
+  const INTERVAL_KEY = "coshin-interval";
+  const COLOURS_KEY = "coshin-colours";
+  const ORDER_KEY = "coshin-order";
+
+  const DEFAULT_COLOURS = ["#e53935", "#fdd835"];
+  const HEX_REGEX = /^#([0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
+
+  function detectInitialMode() {
+    const val = localStorage.getItem(MODE_KEY);
+    if (val === "stopwatch" || val === "timer") return val;
+    try {
+      const raw = localStorage.getItem("coshin-settings");
+      if (raw) {
+        const p = JSON.parse(raw);
+        if (p && p.mode === "stopwatch") return "stopwatch";
+      }
+    } catch {}
+    return "timer";
+  }
+
+  function detectInitialInterval() {
+    const val = Number(localStorage.getItem(INTERVAL_KEY));
+    if (Number.isFinite(val) && val > 0) return val;
+    try {
+      const raw = localStorage.getItem("coshin-settings");
+      if (raw) {
+        const p = JSON.parse(raw);
+        const pInt = Number(p.interval);
+        if (Number.isFinite(pInt) && pInt > 0) return pInt;
+      }
+    } catch {}
+    return 3;
+  }
+
+  function detectInitialColours() {
+    const stored = localStorage.getItem(COLOURS_KEY);
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          const valid = parsed.filter((c) => typeof c === "string" && HEX_REGEX.test(c));
+          if (valid.length > 0) return valid;
+        }
+      } catch {}
+    }
+    try {
+      const raw = localStorage.getItem("coshin-settings");
+      if (raw) {
+        const p = JSON.parse(raw);
+        if (p && Array.isArray(p.colours)) {
+          const valid = p.colours.filter((c) => typeof c === "string" && HEX_REGEX.test(c));
+          if (valid.length > 0) return valid;
+        }
+      }
+    } catch {}
+    return [...DEFAULT_COLOURS];
+  }
+
+  function detectInitialOrder() {
+    const val = localStorage.getItem(ORDER_KEY);
+    if (val === "circle" || val === "random") return val;
+    try {
+      const raw = localStorage.getItem("coshin-settings");
+      if (raw) {
+        const p = JSON.parse(raw);
+        if (p && (p.timerOrder === "circle" || p.order === "circle")) return "circle";
+      }
+    } catch {}
+    return "random";
+  }
+
+  // Active runtime state variables (matching worder & wordweave pattern)
+  let mode = detectInitialMode();
+  let interval = detectInitialInterval();
+  let colours = detectInitialColours();
+  let timerOrder = detectInitialOrder();
+
+  function getEffectiveOrder() {
+    return mode === "stopwatch" ? "circle" : timerOrder;
+  }
+
+  function persistSettings() {
+    try {
+      localStorage.setItem(MODE_KEY, mode);
+      localStorage.setItem(INTERVAL_KEY, String(interval));
+      localStorage.setItem(COLOURS_KEY, JSON.stringify(colours));
+      localStorage.setItem(ORDER_KEY, timerOrder);
+      localStorage.setItem("coshin-settings", JSON.stringify({
+        mode,
+        interval,
+        colours,
+        order: getEffectiveOrder(),
+        timerOrder,
+      }));
+    } catch {}
+  }
 
   const views = {
     welcome: document.getElementById("view-welcome"),
@@ -24,56 +116,40 @@
   const closeHelpBtn = document.getElementById("close-help-btn");
   const startBtn = document.getElementById("start-btn");
   const stopBtn = document.getElementById("stop-btn");
+  const lapBtn = document.getElementById("lap-btn");
+  const resumeBtn = document.getElementById("resume-btn");
+  const restartBtn = document.getElementById("restart-btn");
+  const endBtn = document.getElementById("end-btn");
   const settingsBtn = document.getElementById("settings-btn");
   const closeSettingsBtn = document.getElementById("close-settings-btn");
   const resetBtn = document.getElementById("reset-btn");
   const intervalInput = document.getElementById("interval-input");
+  const modeTimerBtn = document.getElementById("mode-timer");
+  const modeStopwatchBtn = document.getElementById("mode-stopwatch");
+  const fieldInterval = document.getElementById("field-interval");
+  const orderField = document.querySelector(".order-field");
   const orderRandomInput = document.getElementById("order-random");
   const orderCircleInput = document.getElementById("order-circle");
   const colourList = document.getElementById("colour-list");
   const newColourInput = document.getElementById("new-colour-input");
   const addColourBtn = document.getElementById("add-colour-btn");
   const timerEl = document.getElementById("timer");
+  const lapsContainer = document.getElementById("laps-container");
+  const lapsList = document.getElementById("laps-list");
   const historyEl = document.getElementById("colour-history");
   const footerEl = document.getElementById("site-footer");
   const footerVersionEl = document.getElementById("footer-version");
   const mainView = views.main;
   const HISTORY_LIMIT = 10;
 
-  let settings = loadSettings();
-  let previousView = "welcome";
   let colourIndex = 0;
-  let remaining = settings.interval;
+  let remaining = interval;
+  let stopwatchElapsed = 0;
+  let lastLapTime = 0;
+  let laps = [];
   let tickHandle = null;
   let colourHistory = [];
   let wakeLock = null;
-
-  const HEX_REGEX = /^#([0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
-
-  function loadSettings() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return structuredClone(DEFAULT_SETTINGS);
-      const parsed = JSON.parse(raw);
-      const colours = Array.isArray(parsed.colours)
-        ? parsed.colours.filter((c) => typeof c === "string" && HEX_REGEX.test(c))
-        : [];
-      const validColours = colours.length > 0 ? colours : DEFAULT_SETTINGS.colours;
-      const interval = Number(parsed.interval);
-      const order = parsed.order === "circle" ? "circle" : DEFAULT_SETTINGS.order;
-      return {
-        interval: Number.isFinite(interval) && interval > 0 ? interval : DEFAULT_SETTINGS.interval,
-        colours: validColours,
-        order,
-      };
-    } catch {
-      return structuredClone(DEFAULT_SETTINGS);
-    }
-  }
-
-  function saveSettings() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
-  }
 
   function showView(name) {
     for (const [key, el] of Object.entries(views)) {
@@ -87,10 +163,42 @@
     showView("welcome");
   }
 
+  function formatStopwatchTime(sec) {
+    const mins = Math.floor(sec / 60);
+    const remainder = (sec % 60).toFixed(1);
+    const padded = (sec % 60 < 10 ? "0" : "") + remainder;
+    return mins > 0 ? `${mins}:${padded}` : `${remainder}s`;
+  }
+
   function goToMain() {
     colourIndex = 0;
-    remaining = settings.interval;
+    remaining = interval;
+    stopwatchElapsed = 0;
+    lastLapTime = 0;
+    laps = [];
     colourHistory = [];
+    lapsList.innerHTML = "";
+
+    resumeBtn.classList.add("hidden");
+    restartBtn.classList.add("hidden");
+    endBtn.classList.add("hidden");
+
+    if (mode === "stopwatch") {
+      historyEl.hidden = true;
+      historyEl.classList.add("hidden");
+      lapBtn.classList.remove("hidden");
+      stopBtn.classList.remove("hidden");
+      lapsContainer.classList.remove("hidden");
+      timerEl.textContent = "0.0s";
+    } else {
+      historyEl.hidden = false;
+      historyEl.classList.remove("hidden");
+      lapBtn.classList.add("hidden");
+      stopBtn.classList.remove("hidden");
+      lapsContainer.classList.add("hidden");
+      timerEl.textContent = remaining.toFixed(1);
+    }
+
     applyColour();
     showView("main");
     startCycling();
@@ -102,6 +210,7 @@
   }
 
   function closeSettings() {
+    persistSettings();
     settingsModal.classList.add("hidden");
   }
 
@@ -114,7 +223,7 @@
   }
 
   function applyColour() {
-    const colour = settings.colours[colourIndex % settings.colours.length];
+    const colour = colours[colourIndex % colours.length];
     mainView.style.setProperty("--flash-colour", colour);
     colourHistory.push(colour);
     if (colourHistory.length > HISTORY_LIMIT) {
@@ -124,6 +233,13 @@
   }
 
   function renderHistory() {
+    if (mode === "stopwatch") {
+      historyEl.hidden = true;
+      historyEl.classList.add("hidden");
+      return;
+    }
+    historyEl.hidden = false;
+    historyEl.classList.remove("hidden");
     historyEl.innerHTML = "";
     for (const colour of colourHistory) {
       const li = document.createElement("li");
@@ -133,13 +249,44 @@
   }
 
   function advanceColour() {
-    const count = settings.colours.length;
-    if (settings.order === "circle" || count <= 1) {
+    const count = colours.length;
+    const effectiveOrder = getEffectiveOrder();
+    if (effectiveOrder === "circle" || count <= 1) {
       colourIndex = (colourIndex + 1) % count;
     } else {
       colourIndex = Math.floor(Math.random() * count);
     }
     applyColour();
+  }
+
+  function recordLap() {
+    if (mode !== "stopwatch" || mainView.hidden) return;
+    const currentColour = colours[colourIndex % colours.length];
+    const lapTime = stopwatchElapsed - lastLapTime;
+    lastLapTime = stopwatchElapsed;
+    laps.unshift({
+      id: laps.length + 1,
+      totalTime: stopwatchElapsed,
+      lapTime: lapTime,
+      colour: currentColour,
+    });
+    advanceColour();
+    renderLaps();
+  }
+
+  function renderLaps() {
+    lapsList.innerHTML = "";
+    for (const lap of laps) {
+      const li = document.createElement("li");
+      li.className = "lap-item";
+      li.innerHTML = `
+        <span class="lap-num">Lap ${lap.id}</span>
+        <span class="lap-swatch" style="background:${lap.colour}"></span>
+        <span class="lap-split">+${formatStopwatchTime(lap.lapTime)}</span>
+        <span class="lap-total">${formatStopwatchTime(lap.totalTime)}</span>
+      `;
+      lapsList.appendChild(li);
+    }
   }
 
   function startCycling() {
@@ -150,14 +297,25 @@
       const now = performance.now();
       const delta = (now - lastTick) / 1000;
       lastTick = now;
-      remaining -= delta;
-      if (remaining <= 0.05) {
-        remaining = settings.interval;
-        advanceColour();
+
+      if (mode === "stopwatch") {
+        stopwatchElapsed += delta;
+        timerEl.textContent = formatStopwatchTime(stopwatchElapsed);
+      } else {
+        remaining -= delta;
+        if (remaining <= 0.05) {
+          remaining = interval;
+          advanceColour();
+        }
+        timerEl.textContent = Math.max(0, remaining).toFixed(1);
       }
-      timerEl.textContent = Math.max(0, remaining).toFixed(1);
     }, 100);
-    timerEl.textContent = remaining.toFixed(1);
+
+    if (mode === "stopwatch") {
+      timerEl.textContent = "0.0s";
+    } else {
+      timerEl.textContent = remaining.toFixed(1);
+    }
   }
 
   function stopCycling() {
@@ -168,9 +326,6 @@
     releaseWakeLock();
   }
 
-  // Keeps the screen from sleeping mid-cycle — otherwise the display can turn off while
-  // this is meant to be flashing unattended. The lock is auto-released by the browser
-  // whenever the tab is backgrounded, so it's re-requested on visibilitychange too.
   async function requestWakeLock() {
     if (!("wakeLock" in navigator)) return;
     try {
@@ -194,16 +349,27 @@
   });
 
   function renderSettingsForm() {
-    intervalInput.value = settings.interval;
+    const effectiveOrder = getEffectiveOrder();
+    if (mode === "stopwatch") {
+      if (orderField) orderField.style.display = "none";
+    } else {
+      if (orderField) orderField.style.display = "block";
+    }
+
+    modeTimerBtn.classList.toggle("selected", mode === "timer");
+    modeStopwatchBtn.classList.toggle("selected", mode === "stopwatch");
+    fieldInterval.style.display = mode === "stopwatch" ? "none" : "block";
+
+    intervalInput.value = interval;
     document.querySelectorAll(".preset-btn").forEach((btn) => {
       const val = Number(btn.dataset.preset);
-      btn.classList.toggle("selected", val === settings.interval);
+      btn.classList.toggle("selected", val === interval);
     });
-    orderRandomInput.classList.toggle("selected", settings.order === "random");
-    orderCircleInput.classList.toggle("selected", settings.order === "circle");
+    orderRandomInput.classList.toggle("selected", effectiveOrder === "random");
+    orderCircleInput.classList.toggle("selected", effectiveOrder === "circle");
 
     colourList.innerHTML = "";
-    settings.colours.forEach((colour, i) => {
+    colours.forEach((colour, i) => {
       const li = document.createElement("li");
       li.className = "colour-chip";
 
@@ -216,10 +382,10 @@
       removeBtn.type = "button";
       removeBtn.textContent = "✕";
       removeBtn.setAttribute("aria-label", `Remove colour ${colour}`);
-      removeBtn.disabled = settings.colours.length <= 1;
+      removeBtn.disabled = colours.length <= 1;
       removeBtn.addEventListener("click", () => {
-        settings.colours.splice(i, 1);
-        saveSettings();
+        colours.splice(i, 1);
+        persistSettings();
         renderSettingsForm();
       });
       li.appendChild(removeBtn);
@@ -229,11 +395,67 @@
   }
 
   startBtn.addEventListener("click", goToMain);
-  stopBtn.addEventListener("click", goToWelcome);
+
+  stopBtn.addEventListener("click", () => {
+    if (mode === "stopwatch") {
+      stopCycling();
+      lapBtn.classList.add("hidden");
+      stopBtn.classList.add("hidden");
+      resumeBtn.classList.remove("hidden");
+      restartBtn.classList.remove("hidden");
+      endBtn.classList.remove("hidden");
+    } else {
+      goToWelcome();
+    }
+  });
+
+  resumeBtn.addEventListener("click", () => {
+    resumeBtn.classList.add("hidden");
+    restartBtn.classList.add("hidden");
+    endBtn.classList.add("hidden");
+    lapBtn.classList.remove("hidden");
+    stopBtn.classList.remove("hidden");
+    startCycling();
+  });
+
+  restartBtn.addEventListener("click", () => {
+    stopwatchElapsed = 0;
+    lastLapTime = 0;
+    laps = [];
+    colourIndex = 0;
+    lapsList.innerHTML = "";
+    timerEl.textContent = "0.0s";
+    applyColour();
+    resumeBtn.classList.add("hidden");
+    restartBtn.classList.add("hidden");
+    endBtn.classList.add("hidden");
+    lapBtn.classList.remove("hidden");
+    stopBtn.classList.remove("hidden");
+    startCycling();
+  });
+
+  endBtn.addEventListener("click", () => {
+    goToWelcome();
+  });
+
+  lapBtn.addEventListener("click", recordLap);
   settingsBtn.addEventListener("click", openSettings);
   closeSettingsBtn.addEventListener("click", closeSettings);
   helpBtn.addEventListener("click", openHelp);
   closeHelpBtn.addEventListener("click", closeHelp);
+
+  mainView.addEventListener("click", (e) => {
+    if (mode === "stopwatch" && !e.target.closest("button")) {
+      recordLap();
+    }
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.code === "Space" && mode === "stopwatch" && !mainView.hidden) {
+      e.preventDefault();
+      recordLap();
+    }
+  });
 
   document.querySelectorAll(".modal-close-btn").forEach((btn) => {
     const modal = btn.closest(".modal");
@@ -248,13 +470,24 @@
     });
   });
 
+  document.querySelectorAll("[data-mode]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const selectedMode = btn.getAttribute("data-mode");
+      if (selectedMode === "stopwatch" || selectedMode === "timer") {
+        mode = selectedMode;
+        persistSettings();
+        renderSettingsForm();
+      }
+    });
+  });
+
   document.querySelectorAll(".preset-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       const val = Number(btn.dataset.preset);
       if (Number.isFinite(val) && val > 0) {
-        settings.interval = val;
+        interval = val;
         intervalInput.value = val;
-        saveSettings();
+        persistSettings();
         renderSettingsForm();
       }
     });
@@ -263,8 +496,8 @@
   intervalInput.addEventListener("input", () => {
     const value = Number(intervalInput.value);
     if (Number.isFinite(value) && value > 0) {
-      settings.interval = value;
-      saveSettings();
+      interval = value;
+      persistSettings();
       document.querySelectorAll(".preset-btn").forEach((btn) => {
         btn.classList.toggle("selected", Number(btn.dataset.preset) === value);
       });
@@ -273,9 +506,12 @@
 
   for (const btn of [orderRandomInput, orderCircleInput]) {
     btn.addEventListener("click", () => {
-      settings.order = btn.dataset.order;
-      saveSettings();
-      renderSettingsForm();
+      const val = btn.dataset.order;
+      if (val === "random" || val === "circle") {
+        timerOrder = val;
+        persistSettings();
+        renderSettingsForm();
+      }
     });
   }
 
@@ -290,30 +526,34 @@
 
   addColourBtn.addEventListener("click", () => {
     const value = newColourInput.value;
-    if (!settings.colours.includes(value)) {
-      settings.colours.push(value);
-      saveSettings();
+    if (value && HEX_REGEX.test(value)) {
+      if (!colours.includes(value)) {
+        colours.push(value);
+        persistSettings();
+      }
     }
     newColourInput.value = getRandomHexColour();
     renderSettingsForm();
   });
 
   resetBtn.addEventListener("click", () => {
-    settings = structuredClone(DEFAULT_SETTINGS);
+    localStorage.removeItem(MODE_KEY);
+    localStorage.removeItem(INTERVAL_KEY);
+    localStorage.removeItem(COLOURS_KEY);
+    localStorage.removeItem(ORDER_KEY);
+    localStorage.removeItem("coshin-settings");
+    mode = "timer";
+    interval = 3;
+    colours = [...DEFAULT_COLOURS];
+    timerOrder = "random";
+    persistSettings();
     newColourInput.value = getRandomHexColour();
-    saveSettings();
     renderSettingsForm();
   });
 
   function registerServiceWorker() {
     if (!("serviceWorker" in navigator)) return;
 
-    // Local dev must always reflect whatever's currently on disk. sw.js's CACHE_NAME only changes
-    // on a real deploy (the __CACHE_VERSION__ placeholder is substituted by CI, never locally), so
-    // a service worker registered here would serve one fixed snapshot forever, silently ignoring
-    // every subsequent edit and every ?v=N cache-bust. Actively unregister here too (not just skip
-    // future registration) so a *previously* registered local SW self-heals on the next load instead
-    // of requiring a manual DevTools "Unregister".
     if (["localhost", "127.0.0.1"].includes(location.hostname)) {
       navigator.serviceWorker.getRegistrations().then((regs) => regs.forEach((r) => r.unregister()));
       if (window.caches) caches.keys().then((keys) => keys.forEach((k) => caches.delete(k)));
@@ -324,8 +564,6 @@
       navigator.serviceWorker.register("sw.js").catch(() => {});
     });
 
-    // A new SW takes control after skipWaiting()/clients.claim() once the previous
-    // page's assets are all replaced — reload once so the page picks up the update.
     let refreshing = false;
     navigator.serviceWorker.addEventListener("controllerchange", () => {
       if (refreshing) return;
@@ -335,6 +573,7 @@
   }
 
   footerVersionEl.textContent = `v${ASSET_VERSION}`;
+  renderSettingsForm();
   showView("welcome");
   registerServiceWorker();
 })();

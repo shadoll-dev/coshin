@@ -13,7 +13,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="coShin" />
-  <link rel="stylesheet" href="style.css?v=11" />
+  <link rel="stylesheet" href="style.css?v=27" />
 </head>
 <body>
   <div class="header-actions">
@@ -27,9 +27,9 @@
       <div class="welcome-content">
         <h1 class="app-title">coShin</h1>
         <p class="app-description">
-          A full-screen colour flasher. Press start and watch the screen cycle
-          through your chosen colours on a timer — tweak the colours and the
-          interval any time from settings.
+          A full-screen colour flasher & stopwatch. Cycle through your chosen
+          colours automatically on a timer or manually record lap splits in
+          stopwatch mode — tweak settings any time.
         </p>
         <button id="start-btn" class="start-btn" type="button">START</button>
       </div>
@@ -38,8 +38,19 @@
     <!-- Main colour-cycling screen -->
     <section id="view-main" class="view view-main" data-view="main" hidden>
       <ul id="colour-history" class="colour-history" aria-label="Recent colours"></ul>
-      <div class="timer" id="timer" aria-live="off">3.0</div>
-      <button id="stop-btn" class="stop-btn" type="button">STOP</button>
+      <div class="timer-container">
+        <div class="timer" id="timer" aria-live="off">3.0</div>
+        <div id="laps-container" class="laps-container hidden">
+          <ul id="laps-list" class="laps-list" aria-label="Recorded Laps"></ul>
+        </div>
+      </div>
+      <div class="main-actions">
+        <button id="lap-btn" class="lap-btn hidden" type="button">LAP</button>
+        <button id="stop-btn" class="stop-btn" type="button">STOP</button>
+        <button id="resume-btn" class="resume-btn hidden" type="button">RESUME</button>
+        <button id="restart-btn" class="restart-btn hidden" type="button">RESTART</button>
+        <button id="end-btn" class="end-btn hidden" type="button">END</button>
+      </div>
     </section>
   </main>
 
@@ -50,16 +61,17 @@
         <button class="modal-close-btn" aria-label="Close" title="Close">✕</button>
         <h2>How to Use coShin</h2>
       </div>
-      <p>coShin is a full-screen colour flasher.</p>
+      <p>coShin is a full-screen colour flasher & stopwatch.</p>
 
       <h3>Features & Options</h3>
       <ul>
-        <li><strong>Start / Stop:</strong> Press <strong>START</strong> to launch full-screen colour cycling. Press <strong>STOP</strong> at any time to return.</li>
-        <li><strong>Timer Interval:</strong> Customise the display time per colour (from 0.5 to 60 seconds) in <strong>Settings (⚙)</strong>.</li>
-        <li><strong>Colour Order:</strong> Toggle between <strong>Random</strong> shuffling and <strong>Circle</strong> (in order) sequential cycling.</li>
-        <li><strong>Custom Palette:</strong> Add any hex colour using the colour picker, or delete chips to tailor your palette.</li>
-        <li><strong>Screen Sleep Prevention (Wake Lock):</strong> Automatically keeps your display active while flashing so your screen won't sleep unattended.</li>
-        <li><strong>Colour History:</strong> Tracks the 10 most recent flashed colours in a top bar during active playback.</li>
+        <li><strong>Modes:</strong> Switch between <strong>Timer</strong> (auto-advancing countdown) and <strong>Stopwatch</strong> (count-up with lap logging) in <strong>Settings (⚙)</strong>.</li>
+        <li><strong>Stopwatch & Laps:</strong> Tap <strong>LAP</strong> (or anywhere on screen / Spacebar) to record lap split times and cycle to the next colour. Press <strong>STOP</strong> to pause and access <strong>RESUME</strong>, <strong>RESTART</strong>, or <strong>END</strong>.</li>
+        <li><strong>Timer Interval:</strong> Customise the display time per colour (from 0.5 to 60 seconds) for Timer mode.</li>
+        <li><strong>Colour Order:</strong> Toggle between <strong>Random</strong> shuffling and <strong>Circle</strong> (sequential order) cycling.</li>
+        <li><strong>Custom Palette:</strong> Add any custom hex colour using the colour picker, or remove chips to tailor your palette.</li>
+        <li><strong>Screen Sleep Prevention (Wake Lock):</strong> Keeps your display active while flashing so your screen won't sleep unattended.</li>
+        <li><strong>Colour History:</strong> Tracks recent flashed colours in a top bar during Timer mode playback.</li>
       </ul>
 
       <button id="close-help-btn" class="btn-primary" type="button">Close</button>
@@ -74,7 +86,15 @@
         <h2>Settings</h2>
       </div>
 
-      <div class="field">
+      <div class="field mode-field">
+        <span>Mode</span>
+        <div class="segmented-control" role="radiogroup" aria-label="Flasher Mode">
+          <button id="mode-timer" type="button" class="segmented-btn" data-mode="timer">⏱ Timer</button>
+          <button id="mode-stopwatch" type="button" class="segmented-btn" data-mode="stopwatch">🚩 Stopwatch</button>
+        </div>
+      </div>
+
+      <div id="field-interval" class="field">
         <span>Interval between colours (seconds)</span>
         <input id="interval-input" type="number" min="0.5" max="60" step="0.5" />
         <div id="interval-presets" class="preset-pills" role="radiogroup" aria-label="Timing presets">
@@ -115,6 +135,6 @@
     <span id="footer-version" class="footer-version"></span>
   </footer>
 
-  <script src="script.js?v=11"></script>
+  <script src="script.js?v=27"></script>
 </body>
 </html>

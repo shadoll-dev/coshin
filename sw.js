@@ -29,25 +29,22 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-// Cache-first for precached app shell so the installed app works fully offline;
-// anything not in the precache list falls back to the network. Matches ignore the query
-// string (index.html loads style.css/script.js with a manual ?v=N cache-busting param
-// for local dev) so a precached "style.css" still serves a versioned request.
+// Network-first strategy so edits and state updates take effect immediately on reload,
+// with fallback to cache for offline capabilities.
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+  // In local dev (__CACHE_VERSION__ is unsubstituted), bypass SW cache completely so every reload fetches fresh code & state
+  if (CACHE_VERSION === "__CACHE_VERSION__") return;
 
   event.respondWith(
-    caches.match(event.request, { ignoreSearch: true }).then((cached) => {
-      if (cached) return cached;
-      return fetch(event.request)
-        .then((response) => {
-          if (response && response.ok) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-          }
-          return response;
-        })
-        .catch(() => caches.match("index.html"));
-    })
+    fetch(event.request)
+      .then((response) => {
+        if (response && response.ok) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        }
+        return response;
+      })
+      .catch(() => caches.match(event.request).then((cached) => cached || caches.match("index.html")))
   );
 });

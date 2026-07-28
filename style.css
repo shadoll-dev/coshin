@@ -150,6 +150,11 @@ html, body {
   z-index: 10;
 }
 
+.colour-history.hidden,
+.colour-history[hidden] {
+  display: none !important;
+}
+
 .colour-history li {
   width: 1.1rem;
   height: 1.1rem;
@@ -164,41 +169,201 @@ html, body {
   border-color: rgba(255, 255, 255, 0.9);
 }
 
-.timer {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: clamp(4rem, 20vw, 12rem);
-  font-weight: 800;
-  color: rgba(0, 0, 0, 0.35);
-  font-variant-numeric: tabular-nums;
-  user-select: none;
-  pointer-events: none;
+.timer-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
   z-index: 5;
 }
 
-.stop-btn {
+.timer {
+  font-size: clamp(4rem, 18vw, 10rem);
+  font-weight: 800;
+  color: rgba(0, 0, 0, 0.45);
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+  pointer-events: none;
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.laps-container {
+  max-height: 220px;
+  width: min(90vw, 360px);
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 1rem;
+  padding: 0.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.laps-container.hidden {
+  display: none !important;
+}
+
+.laps-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lap-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 0.6rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fff;
+  gap: 8px;
+}
+
+.lap-num {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+  min-width: 50px;
+}
+
+.lap-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  flex-shrink: 0;
+}
+
+.lap-split {
+  color: #81c784;
+  font-weight: 700;
+}
+
+.lap-total {
+  color: rgba(255, 255, 255, 0.85);
+  font-variant-numeric: tabular-nums;
+}
+
+.main-actions {
   position: absolute;
-  bottom: 3rem;
+  bottom: 2.5rem;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  z-index: 10;
+}
+
+.lap-btn,
+.stop-btn,
+.resume-btn,
+.restart-btn,
+.end-btn {
+  font-size: 1.2rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  padding: 1rem 3rem;
-  border: none;
+  padding: 0.9rem 2.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 1rem;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.lap-btn {
+  background: rgba(46, 125, 50, 0.75);
+  color: #fff;
+}
+
+.lap-btn:hover {
+  background: rgba(46, 125, 50, 0.9);
+}
+
+.lap-btn:active {
+  transform: scale(0.96);
+}
+
+.lap-btn.hidden {
+  display: none !important;
+}
+
+.stop-btn {
   background: rgba(0, 0, 0, 0.55);
   color: #fff;
-  cursor: pointer;
-  transition: background 0.15s ease;
-  z-index: 10;
 }
 
 .stop-btn:hover {
   background: rgba(0, 0, 0, 0.75);
+}
+
+.stop-btn:active {
+  transform: scale(0.96);
+}
+
+.stop-btn.hidden {
+  display: none !important;
+}
+
+.resume-btn {
+  background: rgba(25, 118, 210, 0.8);
+  color: #fff;
+}
+
+.resume-btn:hover {
+  background: rgba(25, 118, 210, 0.95);
+}
+
+.resume-btn:active {
+  transform: scale(0.96);
+}
+
+.resume-btn.hidden {
+  display: none !important;
+}
+
+.restart-btn {
+  background: rgba(211, 47, 47, 0.8);
+  color: #fff;
+}
+
+.restart-btn:hover {
+  background: rgba(211, 47, 47, 0.95);
+}
+
+.restart-btn:active {
+  transform: scale(0.96);
+}
+
+.restart-btn.hidden {
+  display: none !important;
+}
+
+.end-btn {
+  background: rgba(100, 110, 125, 0.75);
+  color: #fff;
+}
+
+.end-btn:hover {
+  background: rgba(100, 110, 125, 0.95);
+}
+
+.end-btn:active {
+  transform: scale(0.96);
+}
+
+.end-btn.hidden {
+  display: none !important;
 }
 
 /* Modal windows */
