@@ -16,9 +16,12 @@
   const views = {
     welcome: document.getElementById("view-welcome"),
     main: document.getElementById("view-main"),
-    settings: document.getElementById("view-settings"),
   };
 
+  const helpModal = document.getElementById("help-modal");
+  const settingsModal = document.getElementById("settings-modal");
+  const helpBtn = document.getElementById("help-btn");
+  const closeHelpBtn = document.getElementById("close-help-btn");
   const startBtn = document.getElementById("start-btn");
   const stopBtn = document.getElementById("stop-btn");
   const settingsBtn = document.getElementById("settings-btn");
@@ -94,18 +97,20 @@
   }
 
   function openSettings() {
-    previousView = mainView.hidden ? "welcome" : "main";
-    stopCycling();
     renderSettingsForm();
-    showView("settings");
+    settingsModal.classList.remove("hidden");
   }
 
   function closeSettings() {
-    if (previousView === "main") {
-      goToMain();
-    } else {
-      showView("welcome");
-    }
+    settingsModal.classList.add("hidden");
+  }
+
+  function openHelp() {
+    helpModal.classList.remove("hidden");
+  }
+
+  function closeHelp() {
+    helpModal.classList.add("hidden");
   }
 
   function applyColour() {
@@ -218,15 +223,24 @@
     });
   }
 
-  const closeSettingsXBtn = document.getElementById("close-settings-x-btn");
-
   startBtn.addEventListener("click", goToMain);
   stopBtn.addEventListener("click", goToWelcome);
   settingsBtn.addEventListener("click", openSettings);
   closeSettingsBtn.addEventListener("click", closeSettings);
-  if (closeSettingsXBtn) closeSettingsXBtn.addEventListener("click", closeSettings);
-  views.settings.addEventListener("click", (e) => {
-    if (e.target === views.settings) closeSettings();
+  helpBtn.addEventListener("click", openHelp);
+  closeHelpBtn.addEventListener("click", closeHelp);
+
+  document.querySelectorAll(".modal-close-btn").forEach((btn) => {
+    const modal = btn.closest(".modal");
+    btn.addEventListener("click", () => {
+      if (modal) modal.classList.add("hidden");
+    });
+  });
+
+  document.querySelectorAll(".modal").forEach((modal) => {
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) modal.classList.add("hidden");
+    });
   });
 
   intervalInput.addEventListener("change", () => {

@@ -16,7 +16,10 @@
   <link rel="stylesheet" href="style.css?v=3" />
 </head>
 <body>
-  <button id="settings-btn" class="settings-btn" type="button" aria-label="Settings">⚙</button>
+  <div class="header-actions">
+    <button id="help-btn" class="icon-btn" type="button" aria-label="How to use" title="How to use">?</button>
+    <button id="settings-btn" class="icon-btn" type="button" aria-label="Settings" title="Settings">⚙</button>
+  </div>
 
   <main id="app">
     <!-- Welcome screen -->
@@ -38,48 +41,71 @@
       <div class="timer" id="timer" aria-live="off">3.0</div>
       <button id="stop-btn" class="stop-btn" type="button">STOP</button>
     </section>
+  </main>
 
-    <!-- Settings screen -->
-    <section id="view-settings" class="view view-settings modal" data-view="settings" hidden>
-      <div class="settings-panel modal-content">
-        <div class="modal-header">
-          <button id="close-settings-x-btn" class="modal-close-btn" aria-label="Close" title="Close">✕</button>
-          <h2>Settings</h2>
-        </div>
+  <!-- Help modal -->
+  <div id="help-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button class="modal-close-btn" aria-label="Close" title="Close">✕</button>
+        <h2>How to Use coShin</h2>
+      </div>
+      <p>coShin is a full-screen colour flasher designed for ambient lighting, mood setting, photography background effects, focus timing, or visual flashing sequences.</p>
 
-        <label class="field">
-          <span>Interval between colours (seconds)</span>
-          <input id="interval-input" type="number" min="0.5" max="60" step="0.5" />
+      <h3>Features & Options</h3>
+      <ul>
+        <li><strong>Start / Stop:</strong> Press <strong>START</strong> to launch full-screen colour cycling. Press <strong>STOP</strong> at any time to return.</li>
+        <li><strong>Timer Interval:</strong> Customise the display time per colour (from 0.5 to 60 seconds) in <strong>Settings (⚙)</strong>.</li>
+        <li><strong>Colour Order:</strong> Toggle between <strong>Random</strong> shuffling and <strong>Circle</strong> (in order) sequential cycling.</li>
+        <li><strong>Custom Palette:</strong> Add any hex colour using the colour picker, or delete chips to tailor your palette.</li>
+        <li><strong>Screen Sleep Prevention (Wake Lock):</strong> Automatically keeps your display active while flashing so your screen won't sleep unattended.</li>
+        <li><strong>Colour History:</strong> Tracks the 10 most recent flashed colours in a top bar during active playback.</li>
+      </ul>
+
+      <button id="close-help-btn" class="btn-primary" type="button">Close</button>
+    </div>
+  </div>
+
+  <!-- Settings modal -->
+  <div id="settings-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button class="modal-close-btn" aria-label="Close" title="Close">✕</button>
+        <h2>Settings</h2>
+      </div>
+
+      <label class="field">
+        <span>Interval between colours (seconds)</span>
+        <input id="interval-input" type="number" min="0.5" max="60" step="0.5" />
+      </label>
+
+      <fieldset class="field order-field">
+        <span>Colour order</span>
+        <label class="radio-option">
+          <input type="radio" name="order-mode" value="random" id="order-random" />
+          Random
         </label>
+        <label class="radio-option">
+          <input type="radio" name="order-mode" value="circle" id="order-circle" />
+          Circle (in order)
+        </label>
+      </fieldset>
 
-        <fieldset class="field order-field">
-          <span>Colour order</span>
-          <label class="radio-option">
-            <input type="radio" name="order-mode" value="random" id="order-random" />
-            Random
-          </label>
-          <label class="radio-option">
-            <input type="radio" name="order-mode" value="circle" id="order-circle" />
-            Circle (in order)
-          </label>
-        </fieldset>
-
-        <div class="field">
-          <span>Colours</span>
-          <ul id="colour-list" class="colour-list"></ul>
-          <div class="add-colour">
-            <input id="new-colour-input" type="color" value="#3949ab" />
-            <button id="add-colour-btn" type="button">Add colour</button>
-          </div>
-        </div>
-
-        <div class="settings-actions">
-          <button id="reset-btn" type="button" class="reset-btn">Reset to defaults</button>
-          <button id="close-settings-btn" type="button" class="close-btn">Done</button>
+      <div class="field">
+        <span>Colours</span>
+        <ul id="colour-list" class="colour-list"></ul>
+        <div class="add-colour">
+          <input id="new-colour-input" type="color" value="#3949ab" />
+          <button id="add-colour-btn" type="button">Add colour</button>
         </div>
       </div>
-    </section>
-  </main>
+
+      <div class="settings-actions">
+        <button id="reset-btn" type="button" class="reset-btn">Reset to defaults</button>
+        <button id="close-settings-btn" type="button" class="btn-primary">Done</button>
+      </div>
+    </div>
+  </div>
 
   <footer id="site-footer">
     &copy; <a href="https://shadoll.dev" target="_blank" rel="noopener">shadoll, 2026</a>.&emsp;Made by <a href="https://m5y.p9o.uk" target="_blank" rel="noopener">Mykolay</a>, assisted by AI

@@ -88,106 +88,41 @@ html, body {
   transform: translateY(0);
 }
 
-/* Settings button (global, top-right) */
-.settings-btn {
+/* Header actions (global, top-right) */
+.header-actions {
   position: fixed;
   top: calc(1rem + env(safe-area-inset-top, 0px));
   right: calc(1rem + env(safe-area-inset-right, 0px));
   z-index: 1000;
-  width: 3rem;
-  height: 3rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon-btn {
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  border: none;
+  border: 1px solid var(--surface-border);
   background: rgba(0, 0, 0, 0.45);
-  color: #fff;
-  font-size: 1.4rem;
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: bold;
   cursor: pointer;
   backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
   transition: background 0.15s ease, transform 0.15s ease;
 }
 
-.settings-btn:hover {
-  background: rgba(0, 0, 0, 0.65);
-  transform: rotate(20deg);
+.icon-btn:hover {
+  background: rgba(0, 0, 0, 0.7);
+  transform: translateY(-1px);
 }
 
-/* Main colour-cycling screen */
-.view-main {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--flash-colour, #e53935);
-  transition: background-color 0.25s ease;
-}
-
-.colour-history {
-  position: absolute;
-  top: calc(1.25rem + env(safe-area-inset-top, 0px));
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  list-style: none;
-  margin: 0;
-  padding: 0.5rem 0.9rem;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 2rem;
-}
-
-.colour-history li {
-  width: 1.1rem;
-  height: 1.1rem;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  flex: none;
-}
-
-.colour-history li:last-child {
-  width: 1.4rem;
-  height: 1.4rem;
-  border-color: rgba(255, 255, 255, 0.9);
-}
-
-.timer {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: clamp(4rem, 20vw, 12rem);
-  font-weight: 800;
-  color: rgba(0, 0, 0, 0.35);
-  font-variant-numeric: tabular-nums;
-  user-select: none;
-  pointer-events: none;
-}
-
-.stop-btn {
-  position: absolute;
-  bottom: 3rem;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 1.25rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 1rem 3rem;
-  border: none;
-  border-radius: 1rem;
-  background: rgba(0, 0, 0, 0.55);
-  color: #fff;
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
-.stop-btn:hover {
-  background: rgba(0, 0, 0, 0.75);
-}
-
-/* Modal & Settings screen */
+/* Modal windows */
 .modal {
   position: fixed;
   inset: 0;
@@ -197,16 +132,15 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 100;
+  z-index: 1001;
   padding: 1rem;
 }
 
-.view-settings {
-  overflow-y: auto;
+.modal.hidden {
+  display: none !important;
 }
 
-.modal-content,
-.settings-panel {
+.modal-content {
   position: relative;
   width: 100%;
   max-width: 28rem;
@@ -236,11 +170,12 @@ html, body {
   border-bottom: 1px solid var(--border);
 }
 
-.modal-header h2,
-.settings-panel h2 {
+.modal-header h2 {
   margin: 0;
   font-size: 1.3rem;
   padding-right: 2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .modal-close-btn {
@@ -265,6 +200,63 @@ html, body {
 
 .modal-close-btn:hover {
   background: rgba(255, 255, 255, 0.15);
+}
+
+.modal-content p {
+  line-height: 1.5;
+  font-size: 0.95rem;
+  color: var(--text);
+  margin: 0 0 1rem;
+}
+
+.modal-content h3 {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+  margin: 1.2rem 0 0.6rem;
+}
+
+.modal-content ul {
+  padding-left: 1.2rem;
+  margin: 0 0 1.2rem;
+}
+
+.modal-content li {
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.modal-content li strong {
+  color: var(--text);
+}
+
+.btn-primary,
+.btn-secondary {
+  padding: 0.65rem 1.3rem;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-size: 0.85rem;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  filter: brightness(1.1);
+}
+
+.btn-secondary {
+  background: var(--border);
+  color: var(--text);
 }
 
 .field {
