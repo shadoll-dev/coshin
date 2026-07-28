@@ -45,19 +45,22 @@
   let colourHistory = [];
   let wakeLock = null;
 
+  const HEX_REGEX = /^#([0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
+
   function loadSettings() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return structuredClone(DEFAULT_SETTINGS);
       const parsed = JSON.parse(raw);
-      const colours = Array.isArray(parsed.colours) && parsed.colours.length > 0
-        ? parsed.colours
-        : DEFAULT_SETTINGS.colours;
+      const colours = Array.isArray(parsed.colours)
+        ? parsed.colours.filter((c) => typeof c === "string" && HEX_REGEX.test(c))
+        : [];
+      const validColours = colours.length > 0 ? colours : DEFAULT_SETTINGS.colours;
       const interval = Number(parsed.interval);
       const order = parsed.order === "circle" ? "circle" : DEFAULT_SETTINGS.order;
       return {
         interval: Number.isFinite(interval) && interval > 0 ? interval : DEFAULT_SETTINGS.interval,
-        colours,
+        colours: validColours,
         order,
       };
     } catch {
@@ -137,13 +140,17 @@
   function startCycling() {
     stopCycling();
     requestWakeLock();
+    let lastTick = performance.now();
     tickHandle = setInterval(() => {
-      remaining -= 0.1;
+      const now = performance.now();
+      const delta = (now - lastTick) / 1000;
+      lastTick = now;
+      remaining -= delta;
       if (remaining <= 0.05) {
         remaining = settings.interval;
         advanceColour();
       }
-      timerEl.textContent = remaining.toFixed(1);
+      timerEl.textContent = Math.max(0, remaining).toFixed(1);
     }, 100);
     timerEl.textContent = remaining.toFixed(1);
   }
@@ -211,10 +218,16 @@
     });
   }
 
+  const closeSettingsXBtn = document.getElementById("close-settings-x-btn");
+
   startBtn.addEventListener("click", goToMain);
   stopBtn.addEventListener("click", goToWelcome);
   settingsBtn.addEventListener("click", openSettings);
   closeSettingsBtn.addEventListener("click", closeSettings);
+  if (closeSettingsXBtn) closeSettingsXBtn.addEventListener("click", closeSettings);
+  views.settings.addEventListener("click", (e) => {
+    if (e.target === views.settings) closeSettings();
+  });
 
   intervalInput.addEventListener("change", () => {
     const value = Number(intervalInput.value);

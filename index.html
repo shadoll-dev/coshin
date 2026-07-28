@@ -40,9 +40,12 @@
     </section>
 
     <!-- Settings screen -->
-    <section id="view-settings" class="view view-settings" data-view="settings" hidden>
-      <div class="settings-panel">
-        <h2>Settings</h2>
+    <section id="view-settings" class="view view-settings modal" data-view="settings" hidden>
+      <div class="settings-panel modal-content">
+        <div class="modal-header">
+          <button id="close-settings-x-btn" class="modal-close-btn" aria-label="Close" title="Close">✕</button>
+          <h2>Settings</h2>
+        </div>
 
         <label class="field">
           <span>Interval between colours (seconds)</span>

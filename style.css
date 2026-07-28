@@ -4,6 +4,10 @@
   --text: #f5f6f8;
   --muted: #a7adba;
   --accent: #3949ab;
+  --overlay-bg: rgba(0, 0, 0, 0.7);
+  --surface-border: rgba(255, 255, 255, 0.12);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.5);
+  --border: #333846;
 }
 
 * {
@@ -183,25 +187,84 @@ html, body {
   background: rgba(0, 0, 0, 0.75);
 }
 
-/* Settings screen */
-.view-settings {
+/* Modal & Settings screen */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: var(--overlay-bg);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-  overflow-y: auto;
-  padding: calc(5rem + env(safe-area-inset-top, 0px)) 1.5rem 2rem;
+  z-index: 100;
+  padding: 1rem;
 }
 
+.view-settings {
+  overflow-y: auto;
+}
+
+.modal-content,
 .settings-panel {
+  position: relative;
   width: 100%;
   max-width: 28rem;
+  max-height: 85vh;
+  overflow-y: auto;
   background: var(--panel);
   border-radius: 1rem;
-  padding: 2rem;
+  padding: 0 1.5rem 1.5rem;
+  border: 1px solid var(--surface-border);
+  box-shadow: var(--shadow-lg);
+  animation: modal-in 0.15s ease;
 }
 
+@keyframes modal-in {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.modal-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--panel);
+  padding-top: 1.5rem;
+  padding-bottom: 0.75rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-header h2,
 .settings-panel h2 {
-  margin-top: 0;
+  margin: 0;
+  font-size: 1.3rem;
+  padding-right: 2rem;
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 1.2rem;
+  right: 0;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--surface-border);
+  border-radius: 50%;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.9rem;
+  line-height: 1;
+  transition: background 0.15s ease;
+}
+
+.modal-close-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .field {
